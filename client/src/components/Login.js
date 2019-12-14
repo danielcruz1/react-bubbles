@@ -1,43 +1,47 @@
 import React, { useState } from "react";
-import api from '../utils/api';
+import axiosWithAuth from '../utils/axiosWithAuth';
 
-const Login = (props) => {
-  const [error, setError] = useState()
-  const [status, setStatus] = useState({
-    username: '',
-    password: '',
-  })
+const Login = props => {
 
-  const handleChange = (event) => {
-    setStatus({
-      ...status,
-      [event.target.name]: event.target.value,
+  const [user, setUser] = useState ('');
+  const [password, setPassword] = useState ('');
+
+  const useHandler = e => {
+    e.preventDefault();
+    setUser(e.target.value)
+   };
+
+  const passwordHandler = e => {
+    e.preventDefault();
+    setPassword(e.target.value)
+  };
+
+  const handleSubmit = e => {
+    e.preventDefault();
+  let credentials = {
+    username: user,
+    password: password
+  }
+
+  axiosWithAuth()
+    .post('http://localhost:5000/api/login', credentials)
+    .then(res => {localStorage.setItem ('token', res.data.payload)
+    props.history.push('/bubble-page');
     })
-  }
-
-  const handleSubmit = (event) => {
-    event.preventDefault()
-
-    api().post("/api/login", status)
-      .then(res => {
-        console.log(res)
-        localStorage.setItem('token', res.data.payload)
-        props.history.push('/account')
-      })
-      .catch(err => {
-        setError(err.res)
-      })
-  }
+    .catch(err => console.log('error', err.response
+    ))
+      setUser('');
+      setPassword('')
+  }	
 
   return (
     <>  
       <h1>Welcome to the Bubble App!</h1>
-      <form onSubmit={handleSubmit}>
-        {error && <div className='error'>{error}</div>}
-        <input type='text' name='username' placeholder="Username" value={status.username} onChange={handleChange} />
-        <input type='password' name='password' placeholder="Password" value={status.password} onChange={handleChange} />
-        <button type='submit'>Login</button>
-      </form>
+        <form onSubmit={handleSubmit}>
+           <input type="text" value={user} onChange={useHandler} placeholder="username" />
+          <input type="password" value={password} onChange={passwordHandler} placeholder="password" />
+          <button>Login</button>
+        </form>
     </>	    
   )
 }
